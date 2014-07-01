@@ -4,6 +4,16 @@ describe 'cinder' do
     {:rabbit_password => 'guest', :database_connection => 'mysql://user:password@host/database'}
   end
 
+  let :log_params do
+    {
+      :logging_context_format_string => '%(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(request_id)s %(user_identity)s] %(instance)s%(message)s',
+      :logging_default_format_string => '%(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [-] %(instance)s%(message)s',
+      :logging_debug_format_suffix => '%(funcName)s %(pathname)s:%(lineno)d',
+      :logging_exception_prefix => '%(asctime)s.%(msecs)03d %(process)d TRACE %(name)s %(instance)s',
+      :log_config_append => '/etc/cinder/logging.conf'
+    }
+  end
+
   let :facts do
     {:osfamily => 'Debian'}
   end
@@ -68,6 +78,12 @@ describe 'cinder' do
         :value => '/etc/cinder/api-paste.ini'
       )
       should contain_cinder_config('DEFAULT/log_dir').with(:value => '/var/log/cinder')
+
+      should contain_cinder_config('DEFAULT/logging_context_format_string').with_ensure('absent')
+      should contain_cinder_config('DEFAULT/logging_default_format_string').with_ensure('absent')
+      should contain_cinder_config('DEFAULT/logging_debug_format_suffix').with_ensure('absent')
+      should contain_cinder_config('DEFAULT/logging_exception_prefix').with_ensure('absent')
+      should contain_cinder_config('DEFAULT/log_config_append').with_ensure('absent')
     end
 
     it { should contain_file('/etc/cinder/cinder.conf').with(
@@ -99,6 +115,30 @@ describe 'cinder' do
       should contain_cinder_config('DEFAULT/rabbit_ha_queues').with(
         :value => true
       )
+    end
+  end
+
+  describe 'with extra log params' do
+    let :params do
+      req_params.merge(log_params)
+    end
+      
+    it 'should contain many' do
+      should contain_cinder_config('DEFAULT/logging_context_format_string').with(
+          :value => '%(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(request_id)s %(user_identity)s] %(instance)s%(message)s'
+        )
+      should contain_cinder_config('DEFAULT/logging_default_format_string').with(
+          :value => '%(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [-] %(instance)s%(message)s'
+        )
+      should contain_cinder_config('DEFAULT/logging_debug_format_suffix').with(
+          :value => '%(funcName)s %(pathname)s:%(lineno)d'
+        )
+      should contain_cinder_config('DEFAULT/logging_exception_prefix').with(
+          :value => '%(asctime)s.%(msecs)03d %(process)d TRACE %(name)s %(instance)s'
+        )
+      should contain_cinder_config('DEFAULT/log_config_append').with(
+          :value => '/etc/cinder/logging.conf'
+        )
     end
   end
 

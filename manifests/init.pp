@@ -47,6 +47,27 @@
 #   (optional) Directory where logs should be stored.
 #   If set to boolean false, it will not log to any directory.
 #   Defaults to '/var/log/cinder'
+# 
+# [*logging_context_format_string*]
+#   (optional) Format string to use for log messages with context.
+#   Defaults to undef
+#
+# [*logging_default_format_string*]
+#   (optional) Format string to use for log messages without context.
+#   Defaults to undef
+#
+# [*logging_debug_format_suffix*]
+#   (optional) Data to append to log format when level is DEBUG.
+#   Defaults to undef
+#
+# [*logging_exception_prefix*]
+#   (optional) Prefix each line of exception output with this format.
+#   Defaults to undef
+
+#  [*log_config_append*]
+#   (optional) The name of an additional logging configuration file. See
+#   <https://docs.python.org/2/howto/logging.html>.
+#   Defaults to undef.
 #
 # [*use_ssl*]
 #   (optional) Enable SSL on the API server
@@ -124,6 +145,11 @@ class cinder (
   $use_syslog                  = false,
   $log_facility                = 'LOG_USER',
   $log_dir                     = '/var/log/cinder',
+  $logging_context_format_string = undef,
+  $logging_default_format_string = undef,
+  $logging_debug_format_suffix = undef,
+  $logging_exception_prefix    = undef,
+  $log_config_append           = undef,
   $verbose                     = false,
   $debug                       = false,
   $mysql_module                = '0.9',
@@ -322,6 +348,64 @@ class cinder (
       'DEFAULT/log_dir': ensure => absent;
     }
   }
+
+  # Log format
+
+  if $logging_context_format_string {
+    cinder_config {
+      'DEFAULT/logging_context_format_string' : value => $logging_context_format_string;
+      }
+    }
+    else {
+    cinder_config {
+      'DEFAULT/logging_context_format_string' : ensure => absent;
+      }
+    }
+
+  if $logging_default_format_string {
+    cinder_config {
+      'DEFAULT/logging_default_format_string' : value => $logging_default_format_string;
+      }
+    }
+    else {
+    cinder_config {
+      'DEFAULT/logging_default_format_string' : ensure => absent;
+      }
+    }
+
+  if $logging_debug_format_suffix {
+    cinder_config {
+      'DEFAULT/logging_debug_format_suffix' : value => $logging_debug_format_suffix;
+      }
+    }
+    else {
+    cinder_config {
+      'DEFAULT/logging_debug_format_suffix' : ensure => absent;
+      }
+    }
+
+  if $logging_exception_prefix {
+    cinder_config {
+      'DEFAULT/logging_exception_prefix' : value => $logging_exception_prefix;
+      }
+    }
+    else {
+    cinder_config {
+      'DEFAULT/logging_exception_prefix' : ensure => absent;
+      }
+    }
+
+  if $log_config_append {
+    cinder_config {
+      'DEFAULT/log_config_append' : value => $log_config_append;
+      }
+    }
+    else {
+    cinder_config {
+      'DEFAULT/log_config_append' : ensure => absent;
+      }
+    }
+
 
   # SSL Options
   if $use_ssl {
